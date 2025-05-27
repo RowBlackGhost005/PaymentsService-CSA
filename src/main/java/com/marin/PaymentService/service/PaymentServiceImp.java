@@ -1,10 +1,11 @@
 package com.marin.PaymentService.service;
 
+import com.marin.PaymentService.dto.PaymentOrderRequestDTO;
+import com.marin.PaymentService.dto.PaymentProcessDTO;
 import com.marin.PaymentService.entities.OrderStatus;
 import com.marin.PaymentService.entities.Payment;
 import com.marin.PaymentService.repository.PaymentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,6 +20,26 @@ public class PaymentServiceImp implements PaymentService{
         this.paymentRepository = paymentRepository;
     }
 
+
+    @Override
+    public Payment registerOrderPayment(PaymentOrderRequestDTO paymentOrderRequestDTO) {
+        Payment orderPayment = new Payment();
+        orderPayment.setOrderId(paymentOrderRequestDTO.orderId());
+        orderPayment.setStatus(OrderStatus.PROCESSING);
+
+        return paymentRepository.save(orderPayment);
+    }
+
+    @Override
+    public Payment processPayment(PaymentProcessDTO paymentProcessDTO) {
+        Payment paymentDB = paymentRepository.findById(paymentProcessDTO.id()).orElseThrow();
+
+        if (paymentDB.getStatus() == OrderStatus.PROCESSING){
+            paymentDB.setStatus(OrderStatus.CONFIRMED);
+        }
+
+        return paymentRepository.save(paymentDB);
+    }
 
     @Override
     public Payment registerPayment(Payment payment) {
